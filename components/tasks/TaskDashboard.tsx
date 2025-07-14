@@ -1,13 +1,65 @@
 "use client";
 
 import type React from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, LogOut, User, BarChart3 } from "lucide-react";
+import { TaskForm } from "./TaskForm";
+import { TaskColumn } from "./TaskColumn";
+import { TaskFilters } from "./TaskFilters";
+import { TaskPagination } from "./TaskPagination";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTask } from "@/contexts/TaskContext";
+import type { Task } from "@/types";
 
 export const TaskDashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const { filteredTasks, currentPage, tasksPerPage, moveTask } = useTask();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | undefined>();
+  const [draggedTask, setDraggedTask] = useState<string | null>(null);
+
+  // Paginate tasks
+  const startIndex = (currentPage - 1) * tasksPerPage;
+  const paginatedTasks = filteredTasks.slice(
+    startIndex,
+    startIndex + tasksPerPage
+  );
+
+  // Group tasks by status
+  const todoTasks = paginatedTasks.filter((task) => task.status === "Todo");
+  const inProgressTasks = paginatedTasks.filter(
+    (task) => task.status === "In Progress"
+  );
+  const doneTasks = paginatedTasks.filter((task) => task.status === "Done");
+
+  // Statistics
+  const totalTasks = filteredTasks.length;
+  const completedTasks = filteredTasks.filter(
+    (task) => task.status === "Done"
+  ).length;
+  const overdueTasks = filteredTasks.filter(
+    (task) => new Date(task.dueDate) < new Date() && task.status !== "Done"
+  ).length;
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingTask(undefined);
+  };
+
+  const handleDrop = (
+    taskId: string,
+    newStatus: "Todo" | "In Progress" | "Done"
+  ) => {
+    moveTask(taskId, newStatus);
+    setDraggedTask(null);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -23,7 +75,7 @@ export const TaskDashboard: React.FC = () => {
                 <User className="h-4 w-4 mr-1" />
                 {user?.name}
               </div>
-              <Button>
+              <Button onClick={() => setIsFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Task
               </Button>
@@ -45,7 +97,7 @@ export const TaskDashboard: React.FC = () => {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{17}</div>
+              <div className="text-2xl font-bold">{totalTasks}</div>
             </CardContent>
           </Card>
           <Card>
@@ -54,7 +106,9 @@ export const TaskDashboard: React.FC = () => {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{3}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {completedTasks}
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -63,7 +117,9 @@ export const TaskDashboard: React.FC = () => {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{9}</div>
+              <div className="text-2xl font-bold text-orange-600">
+                {inProgressTasks.length}
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -72,10 +128,53 @@ export const TaskDashboard: React.FC = () => {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{0}</div>
+              <div className="text-2xl font-bold text-red-600">
+                {overdueTasks}
+              </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Filters */}
+        <TaskFilters />
+
+        {/* Task Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <TaskColumn
+            title="Todo"
+            status="Todo"
+            tasks={todoTasks}
+            onEdit={handleEditTask}
+            onDrop={handleDrop}
+            draggedTask={draggedTask}
+          />
+          <TaskColumn
+            title="In Progress"
+            status="In Progress"
+            tasks={inProgressTasks}
+            onEdit={handleEditTask}
+            onDrop={handleDrop}
+            draggedTask={draggedTask}
+          />
+          <TaskColumn
+            title="Done"
+            status="Done"
+            tasks={doneTasks}
+            onEdit={handleEditTask}
+            onDrop={handleDrop}
+            draggedTask={draggedTask}
+          />
+        </div>
+
+        {/* Pagination */}
+        <TaskPagination />
+
+        {/* Task Form Modal */}
+        <TaskForm
+          isOpen={isFormOpen}
+          onClose={handleCloseForm}
+          task={editingTask}
+        />
       </main>
     </div>
   );
