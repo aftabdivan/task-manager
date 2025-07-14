@@ -194,14 +194,4 @@ For testing purposes, you can create accounts with any email/password combinatio
 **Issue**: Styling not loading correctly
 - **Solution**: Clear browser cache and restart development server
 
-
-## 🙏 Acknowledgments
-
-- **shadcn/ui** for the beautiful UI components
-- **Tailwind CSS** for the utility-first CSS framework
-- **Formik** for robust form handling
-- **Lucide React** for the icon library
-- **Next.js** team for the amazing framework
-
-
 **Built with ❤️ using React, Next.js, and TypeScript**
