@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Task Manager Dashboard",
+  title: "Task Manager",
   description: "A comprehensive task management application",
 };
 

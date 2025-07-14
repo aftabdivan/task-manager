@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { TaskProvider } from "@/contexts/TaskContext";
+import { TaskDashboard } from "@/components/tasks/TaskDashboard";
 import { Loader2 } from "lucide-react";
 
 const DashboardPageContent = () => {
@@ -31,7 +33,11 @@ const DashboardPageContent = () => {
     );
   }
 
-  return <h1>Dashboard</h1>;
+  return (
+    <TaskProvider>
+      <TaskDashboard />
+    </TaskProvider>
+  );
 };
 
 export default function DashboardPage() {
